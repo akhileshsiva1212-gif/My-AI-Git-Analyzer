@@ -21,9 +21,9 @@ const BAR_COLORS = [
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg bg-gray-50 p-3 text-center">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+    <div className="neu-inset p-4 text-center">
+      <div className="font-display text-2xl font-extrabold text-[color:var(--neu-text)]">{value}</div>
+      <div className="mt-0.5 text-xs uppercase tracking-wider text-muted">{label}</div>
     </div>
   )
 }
@@ -34,7 +34,7 @@ export default function Metrics({ metrics }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         <Stat label="Files" value={totalFiles} />
         <Stat label="Folders" value={totalFolders} />
         <Stat label="Lines of Code" value={totalLoc.toLocaleString()} />
@@ -45,13 +45,13 @@ export default function Metrics({ metrics }) {
           <div className="space-y-2">
             {languageDistribution.map((d, i) => (
               <div key={d.language}>
-                <div className="mb-0.5 flex justify-between text-xs text-gray-600">
-                  <span>{d.language}</span>
+                <div className="mb-1 flex justify-between text-xs text-muted">
+                  <span className="font-medium text-[color:var(--neu-text)]">{d.language}</span>
                   <span>{d.percent}% · {d.loc.toLocaleString()} LOC</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div className="neu-inset h-3 w-full overflow-hidden rounded-full">
                   <div
-                    className={`h-full ${BAR_COLORS[i % BAR_COLORS.length]}`}
+                    className={`h-full rounded-full ${BAR_COLORS[i % BAR_COLORS.length]}`}
                     style={{ width: `${Math.max(d.percent, 1)}%` }}
                   />
                 </div>
@@ -65,16 +65,16 @@ export default function Metrics({ metrics }) {
 
       <Card title="Largest Files">
         {largestFiles?.length ? (
-          <ul className="divide-y divide-gray-100 text-sm">
+          <ul className="space-y-1.5 text-sm">
             {largestFiles.map((f) => (
-              <li key={f.path} className="flex items-center justify-between py-1.5">
-                <span className="truncate text-gray-700">{f.path}</span>
-                <span className="ml-2 shrink-0 text-xs text-gray-400">{formatBytes(f.size)}</span>
+              <li key={f.path} className="flex items-center justify-between gap-2">
+                <span className="truncate text-[color:var(--neu-text)]">{f.path}</span>
+                <span className="neu-pill shrink-0 px-2 py-0.5 text-xs text-muted">{formatBytes(f.size)}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-400">No files.</p>
+          <p className="text-sm text-muted">No files.</p>
         )}
       </Card>
     </div>

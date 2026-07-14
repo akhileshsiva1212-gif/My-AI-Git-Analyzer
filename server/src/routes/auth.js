@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.post('/auth/register', ctrl.register)
 router.post('/auth/login', ctrl.login)
+router.post('/auth/google', ctrl.googleLogin)
 router.get('/auth/me', requireAuth, ctrl.me)
 
 module.exports = router

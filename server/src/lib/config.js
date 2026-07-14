@@ -7,15 +7,20 @@ const config = {
   port: process.env.PORT || 5000,
 
   // AI layer — provider-agnostic. These come only from the environment.
-  ai: {
-    baseUrl: process.env.AI_BASE_URL,
-    apiKey: process.env.AI_API_KEY,
-    model: process.env.MODEL || 'auto',
-  },
+ ai: {
+  baseUrl: process.env.AI_BASE_URL,
+  apiKey: process.env.OPENROUTER_API_KEY,
+  model: process.env.AI_MODEL || 'google/gemini-2.5-flash',
+},
 
-  // Used later, in Phase 6.
+  // Database + auth.
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: process.env.JWT_SECRET,
+
+  // Google OAuth — only the Client ID is needed (ID-token verification flow).
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
 }
 
 module.exports = config

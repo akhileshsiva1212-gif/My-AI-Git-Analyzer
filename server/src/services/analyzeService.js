@@ -7,6 +7,9 @@ const { parseGitHubUrl, cloneRepo, walkTree } = require('./repoService')
 const { detectStack } = require('./detectService')
 const { analyzeIntelligence } = require('./intelligenceService')
 const { computeMetrics } = require('./metricsService')
+const { analyzeReadme } = require('./readmeService')
+const { buildArchitecture } = require('./architectureService')
+const { computeHealth } = require('./healthService')
 
 // Files worth pulling small snippets from, to ground the AI chat later.
 const IMPORTANT_FILES = [
@@ -44,6 +47,13 @@ async function analyzeRepository(repoUrl) {
     const metrics = await computeMetrics(dir, files, tree)
     const snippets = await collectSnippets(dir, files)
 
+    // Additional fact layers (all rule-based; the AI still only explains facts).
+    const readmeQuality = await analyzeReadme(dir, files)
+    const architecture = buildArchitecture({ stack, intelligence, tree, files })
+    const health = computeHealth({
+      stack, intelligence, metrics, tree, files, readmeQuality, snippets,
+    })
+
     return {
       repo: {
         owner,
@@ -56,6 +66,9 @@ async function analyzeRepository(repoUrl) {
       stack,
       intelligence,
       metrics,
+      readmeQuality,
+      architecture,
+      health,
       snippets,
     }
   } finally {

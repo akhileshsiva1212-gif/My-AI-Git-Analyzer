@@ -27,6 +27,7 @@ async function askAI({ system, messages }) {
       body: JSON.stringify({
         model: config.ai.model, // "auto" => provider selects the model
         messages: fullMessages,
+          max_tokens: 1000,
       }),
     })
   } catch (cause) {

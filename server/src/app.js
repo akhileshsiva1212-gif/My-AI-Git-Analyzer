@@ -7,6 +7,7 @@ const healthRoutes = require('./routes/health')
 const analyzeRoutes = require('./routes/analyze')
 const authRoutes = require('./routes/auth')
 const chatRoutes = require('./routes/chat')
+const explainRoutes = require('./routes/explain')
 const { errorHandler, notFound } = require('./middleware/errorHandler')
 
 const app = express()
@@ -20,6 +21,7 @@ app.use('/api', healthRoutes)
 app.use('/api', analyzeRoutes)
 app.use('/api', authRoutes)
 app.use('/api', chatRoutes)
+app.use('/api', explainRoutes)
 
 // Unknown /api route -> 404 JSON
 app.use('/api', notFound)

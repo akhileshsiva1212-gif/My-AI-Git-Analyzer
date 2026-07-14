@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { apiGet, apiDelete } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useAnalysis } from '../context/AnalysisContext'
+import Skeleton from '../components/Skeleton'
 
 export default function History() {
   const { user, loading: authLoading } = useAuth()
@@ -53,49 +54,61 @@ export default function History() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900">Your Analyses</h1>
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="font-display text-2xl font-extrabold text-[color:var(--neu-text)]">
+        Your analyses
+      </h1>
 
-      {loading && <p className="mt-6 text-sm text-gray-400">Loading…</p>}
-      {error && <p className="mt-6 text-sm text-red-500">{error}</p>}
+      {error && <p className="neu-inset mt-6 px-4 py-2.5 text-sm text-rose-600">{error}</p>}
+
+      {/* Loading skeletons */}
+      {loading && (
+        <ul className="mt-7 space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <li key={i} className="neu-card flex items-center justify-between p-5">
+              <div className="w-full space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {!loading && !items.length && (
-        <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-10 text-center">
-          <p className="text-gray-500">You haven&apos;t analyzed any repositories yet.</p>
-          <Link
-            to="/"
-            className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
+        <div className="neu-card mt-8 p-10 text-center">
+          <p className="text-muted">You haven&apos;t analyzed any repositories yet.</p>
+          <Link to="/" className="neu-accent mt-5 inline-block px-5 py-2.5 text-sm font-semibold">
             Analyze one now
           </Link>
         </div>
       )}
 
-      <ul className="mt-6 space-y-3">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            onClick={() => openAnalysis(item.id)}
-            className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white p-4 hover:border-indigo-300 hover:shadow-sm"
-          >
-            <div>
-              <p className="font-medium text-gray-900">
-                {item.repoOwner}/{item.repoName}
-              </p>
-              <p className="text-xs text-gray-400">
-                {new Date(item.createdAt).toLocaleString()}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => remove(item.id, e)}
-              className="rounded-lg px-2 py-1 text-xs text-red-500 hover:bg-red-50"
+      {!loading && items.length > 0 && (
+        <ul className="mt-7 space-y-3">
+          {items.map((item) => (
+            <li
+              key={item.id}
+              onClick={() => openAnalysis(item.id)}
+              className="neu-card flex cursor-pointer items-center justify-between p-5 transition-transform hover:-translate-y-0.5"
             >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+              <div className="min-w-0">
+                <p className="font-semibold text-[color:var(--neu-text)]">
+                  {item.repoOwner}/{item.repoName}
+                </p>
+                <p className="text-xs text-muted">{new Date(item.createdAt).toLocaleString()}</p>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => remove(item.id, e)}
+                className="neu-btn shrink-0 px-3 py-1.5 text-xs font-semibold text-rose-600"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   )
 }

@@ -44,13 +44,20 @@ export function AuthProvider({ children }) {
     setUser(user)
   }
 
+  // Exchange a Google ID token (from the Sign in with Google button) for our JWT.
+  async function loginWithGoogle(credential) {
+    const { token, user } = await apiPost('/auth/google', { credential })
+    setToken(token)
+    setUser(user)
+  }
+
   function logout() {
     setToken(null)
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   )
