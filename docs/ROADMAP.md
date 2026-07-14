@@ -23,8 +23,10 @@ MODEL=auto
 - Exposes ONE function the whole app uses: `askAI({ system, messages })`.
 - Sends the common chat request shape `{ model, messages }` to `AI_BASE_URL`;
   `MODEL=auto` is passed through so FreeModel selects the model.
-- Every AI feature (chat, explanations) goes through this file. Swapping
-  providers later = change env values (and at most this one adapter file).
+- Every AI feature — **chat** and **AI folder explanation** — goes through
+  this file (the architecture diagram's node graph is rule-based; only its
+  display labels pass through `aiService`). Swapping providers later = change
+  env values (and at most this one adapter file).
 
 ---
 
@@ -35,14 +37,21 @@ client/  (React 19 + Vite + Tailwind + React Router + TanStack Query)
    │  HTTP (JSON) + JWT in Authorization header
    ▼
 server/  (Node + Express)
-   ├── auth        → register / login, JWT issue + verify
-   ├── analyze     → validate URL → shallow clone → walk files → extract facts
-   ├── detect      → languages, frameworks, deps, package manager, build tools,
-   │                 database, auth, API routes  (all rule-based, NO AI)
-   ├── metrics     → totals, LOC, language distribution, largest files
-   ├── chat        → sends extracted facts + relevant snippets through aiService
+   ├── auth            → register / login, JWT issue + verify
+   ├── analyze         → validate URL → shallow clone → walk files → extract facts
+   ├── detect          → languages, frameworks, deps, package manager, build tools,
+   │                     database, auth, API routes  (all rule-based, NO AI)
+   ├── metrics         → totals, LOC, language distribution, largest files
+   ├── health          → architecture / documentation / maintainability / security
+   │                     score, computed from the extracted facts  (rule-based)
+   ├── readme-quality  → scores the repo's own README against key sections
+   │                     (install guide, usage, API docs, license, contributing)
+   ├── timeline        → builds a development timeline from commit/repo history
+   ├── chat            → sends extracted facts + relevant snippets through aiService
+   ├── folder-explain  → sends one folder's facts through aiService for an
+   │                     AI-generated purpose / contents / responsibilities summary
    ├── services/aiService.js → the ONLY place that talks to the AI provider
-   └── db (Prisma) → PostgreSQL: User, Analysis
+   └── db (Prisma)     → PostgreSQL: User, Analysis
 ```
 
 **Key principle from the spec:** the backend extracts *facts*; the AI only
@@ -76,7 +85,7 @@ server/  (Node + Express)
 
 ### Phase 4 — Metrics + visualization
 - Total files/folders, total LOC, language distribution (%), largest files.
-- Simple charts + folder-tree view and a basic architecture diagram.
+- Simple charts + folder-tree view.
 
 ### Phase 5 — AI Repository Chat (via aiService)
 - `POST /api/chat`: backend builds a prompt from the **already-extracted facts** +
@@ -86,6 +95,44 @@ server/  (Node + Express)
 ### Phase 6 — Auth (JWT) + Database (PostgreSQL/Prisma)
 - Prisma schema: `User`, `Analysis`. Register/login with bcrypt-hashed passwords + JWT.
 - Protect routes; **Save Analyses** and **View Previous Analyses** in a user dashboard.
+
+### Phase 7 — 🏗️ AI Architecture Diagram
+- Backend derives a module graph from the already-extracted facts (folders,
+  detected frameworks, route files, auth/database usage) — **rule-based**, no
+  guessing.
+- `aiService` turns that graph into short labels/groupings for display; the
+  graph shape itself always comes from facts, never from the AI.
+- Frontend: interactive diagram component on the dashboard — tapping a node
+  highlights everything it connects to.
+
+### Phase 8 — 📊 Repository Health Score
+- `GET /api/analyses/:id/health`: computes four rule-based sub-scores —
+  **Architecture**, **Documentation**, **Maintainability**, **Security** — each
+  0–100, plus a combined overall score.
+- Scoring inputs come from Phases 1–4 facts (folder depth/organization, README
+  presence, dependency freshness, secret-handling patterns, etc.) — no AI.
+- Frontend: health score ring + sub-score bars on the dashboard.
+
+### Phase 9 — 📖 README Quality Analysis
+- `GET /api/analyses/:id/readme-quality`: parses the analyzed repo's own
+  README and checks for key sections — Installation Guide, Usage Instructions,
+  API Documentation, License, Contributing Guide — **rule-based** section
+  detection, scored out of 100.
+- Frontend: checklist card showing which sections were found.
+
+### Phase 10 — 🤖 AI Folder Explanation
+- `POST /api/analyses/:id/folders/:path/explain`: backend gathers the facts
+  already known about that folder (file list, sizes, detected role) and sends
+  them through `aiService` for a natural-language explanation (purpose,
+  contents, most important files, responsibilities, interactions).
+- Frontend: clicking a folder in the tree opens an "AI Explanation" modal.
+- Same rule as chat: the AI explains facts, it never invents folder contents.
+
+### Phase 11 — 📅 Repository Timeline
+- Backend builds a timeline from repo metadata gathered during the shallow
+  clone/analysis step (e.g. commit dates available from `git log` within the
+  cloned depth, file-creation ordering) — rule-based, no AI.
+- Frontend: timeline view showing the repo's development history at a glance.
 
 ---
 
@@ -100,6 +147,9 @@ server/  (Node + Express)
 - Clone depth 1 + size/timeout guards so a huge repo can't hang the server.
 - Input validation on every route; clear error messages to the UI.
 - All AI access isolated to one module → provider changes stay contained.
+- Health score, README quality, and timeline are all rule-based (no AI) —
+  only chat and folder explanation call `aiService`, and both are grounded
+  strictly in already-extracted facts.
 
 ## Out of scope for now (can add later)
 - Background job queue for very large repos
